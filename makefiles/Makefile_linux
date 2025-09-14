@@ -1,0 +1,68 @@
+# https://makefiletutorial.com/
+
+CC = gcc
+PKG = libnotify
+CFLAGS = -g -Wall $(shell pkg-config --cflags $(PKG))
+LDFLAGS = $(shell pkg-config --libs $(PKG))
+# pkg-config automatically adds all include paths for 'libnotify' and
+# automatically adds all needed libraries (include all sub-dependencies)
+# otherwise we need to hardcode all include paths, e.g.
+# CFLAGS = -g -Wall \
+#     -I/usr/include/glib-2.0 \
+#     -I/usr/lib/x86_64-linux-gnu/glib-2.0/include \
+#     -I/usr/include/libnotify
+# LDFLAGS = -lnotify -lgobject-2.0 -lglib-2.0
+
+SRC_D = src
+OBJ_D = obj
+BIN_D = bin
+
+SRCS = $(wildcard $(SRC_D)/*.c)
+# For every .c file in src/, make a corresponding .o file in obj/
+# patsubst == pattern substitution string
+# (take next .c file, make .o file for it, repeat for all in $(SRCS))
+OBJS = $(patsubst $(SRC_D)/%.c, $(OBJ_D)/%.o, $(SRCS))
+
+BIN = $(BIN_D)/main
+
+build: debug
+
+run: build
+	@echo
+	@$(BIN)
+
+debug: $(BIN)
+
+release: CFLAGS = -O2 -DNDEBUG $(shell pkg-config --cflags $(PKG))
+release: clean $(BIN)
+
+$(BIN): $(OBJS) | $(BIN_D)
+	$(CC) $(CFLAGS) $(OBJS) -o $@ $(LDFLAGS)
+
+# if .c dependencies have .h pair file
+# recompile target if .c or .h dependencies were modified
+$(OBJ_D)/%.o: $(SRC_D)/%.c $(SRC_D)/%.h | $(OBJ_D)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# if .c dependencies don't have .h pair file (e.g. main.c)
+# recompile target if .c dependencies were modified
+$(OBJ_D)/%.o: $(SRC_D)/%.c | $(OBJ_D)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# The | is called an 'order-only prerequisite' in GNU Make.
+# It tells Make:
+# "Ensure this dependency is up-to-date (e.g., the directory exists),
+# but don't rebuild the target if it changes."
+# (i.e. create directory if needed, but don't retrigger recompilation
+# just because the timestamp on the directory was changed)
+
+$(BIN_D):
+	mkdir -p $@
+
+$(OBJ_D):
+	mkdir -p $@
+
+clean:
+	rm -rf $(BIN_D) $(OBJ_D)
+
+.PHONY: clean release debug run build
