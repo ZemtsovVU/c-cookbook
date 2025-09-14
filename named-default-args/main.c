@@ -1,3 +1,5 @@
+// https://x.com/vkrajacic/status/1749816169736073295
+// https://youtu.be/VdmeoMZjIgs
 // https://gcc.gnu.org/onlinedocs/cpp/Variadic-Macros.html
 
 #include <stdio.h>
