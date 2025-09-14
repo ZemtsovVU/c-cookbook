@@ -1,3 +1,6 @@
+// https://youtu.be/t_vM_8TLjFE
+// https://youtu.be/ayfCxgVStdQ
+
 // Multiline example: https://github.com/JustAnotherNotes/just-another-pomodoro
 
 #include <stdio.h> // printf(); fflush();
